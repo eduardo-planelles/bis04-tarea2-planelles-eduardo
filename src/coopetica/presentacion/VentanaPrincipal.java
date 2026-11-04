@@ -26,10 +26,12 @@ public class VentanaPrincipal extends JFrame {
     private JTextField campoCedula = new JTextField(15);
     private JTextField campoNombre = new JTextField(15);
     private JTextField campoSaldo = new JTextField(15);
+    private JTextField campoBuscar = new JTextField(15);
 
     private JButton botonRegistrar = new JButton("Registrar");
     private JButton botonListar = new JButton("Listar");
     private JButton botonResumen = new JButton("Resumen");
+    private JButton botonBuscar = new JButton("Buscar");
 
     private JTextArea areaResultados = new JTextArea(12, 40);
     private JLabel etiquetaEstado = new JLabel(" ");
@@ -55,9 +57,16 @@ public class VentanaPrincipal extends JFrame {
         botones.add(botonListar);
         botones.add(botonResumen);
 
+        JPanel busqueda = new JPanel();
+        busqueda.setBorder(BorderFactory.createTitledBorder("Buscar asociado"));
+        busqueda.add(new JLabel("Cedula:"));
+        busqueda.add(campoBuscar);
+        busqueda.add(botonBuscar);
+
         JPanel norte = new JPanel(new BorderLayout());
-        norte.add(formulario, BorderLayout.CENTER);
-        norte.add(botones, BorderLayout.SOUTH);
+        norte.add(formulario, BorderLayout.NORTH);
+        norte.add(botones, BorderLayout.CENTER);
+        norte.add(busqueda, BorderLayout.SOUTH);
 
         areaResultados.setEditable(false);
 
@@ -68,6 +77,7 @@ public class VentanaPrincipal extends JFrame {
         botonRegistrar.addActionListener(e -> registrar());
         botonListar.addActionListener(e -> listar());
         botonResumen.addActionListener(e -> mostrarResumen());
+        botonBuscar.addActionListener(e -> buscar());
 
         pack();
         setLocationRelativeTo(null);
@@ -125,6 +135,32 @@ public class VentanaPrincipal extends JFrame {
                     mensaje,
                     TITULO_VENTANA,
                     JOptionPane.INFORMATION_MESSAGE);
+        } catch (IOException e) {
+            mostrarError("Error al leer el archivo: " + e.getMessage());
+        } catch (NumberFormatException e) {
+            mostrarError("El archivo de asociados tiene una linea con datos incorrectos.");
+        }
+    }
+
+    private void buscar() {
+        try {
+            Asociado a = servicio.buscarPorCedula(campoBuscar.getText());
+
+            if (a == null) {
+                areaResultados.setText("--- Busqueda ---\nNo existe un asociado con esa cedula.\n");
+                mostrarEstado("No existe un asociado con esa cedula.", true);
+                JOptionPane.showMessageDialog(
+                        this,
+                        "No existe un asociado con esa cedula.",
+                        TITULO_VENTANA,
+                        JOptionPane.WARNING_MESSAGE);
+            } else {
+                areaResultados.setText("--- Busqueda ---\n"
+                        + "Cedula: " + a.getCedula() + "\n"
+                        + "Nombre: " + a.getNombre() + "\n"
+                        + "Saldo de aportes: " + String.format("%.2f", a.getSaldoAportes()) + "\n");
+                mostrarEstado("Asociado encontrado.", false);
+            }
         } catch (IOException e) {
             mostrarError("Error al leer el archivo: " + e.getMessage());
         } catch (NumberFormatException e) {

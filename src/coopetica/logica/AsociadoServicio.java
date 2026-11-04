@@ -79,4 +79,14 @@ public class AsociadoServicio {
         }
         return total;
     }
+
+    public Asociado buscarPorCedula(String cedula) throws IOException {
+        cedula = cedula.trim();
+        for (Asociado asociado : dao.listar()) {
+            if (asociado.getCedula().equals(cedula)) {
+                return asociado;
+            }
+        }
+        return null;
+    }
 }
