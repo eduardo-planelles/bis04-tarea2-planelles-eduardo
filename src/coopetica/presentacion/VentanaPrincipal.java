@@ -4,6 +4,7 @@ import coopetica.logica.AsociadoServicio;
 import coopetica.modelo.Asociado;
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.GridLayout;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -20,6 +21,7 @@ import javax.swing.JTextField;
 public class VentanaPrincipal extends JFrame {
 
     private static final String TITULO_VENTANA = "CoopeTica - Asociados";
+    private static final String AUTOR = "Eduardo Planelles Ramirez";
 
     private AsociadoServicio servicio;
 
@@ -33,8 +35,9 @@ public class VentanaPrincipal extends JFrame {
     private JButton botonResumen = new JButton("Resumen");
     private JButton botonBuscar = new JButton("Buscar");
 
-    private JTextArea areaResultados = new JTextArea(12, 40);
+    private JTextArea areaListado = new JTextArea(12, 40);
     private JLabel etiquetaEstado = new JLabel(" ");
+    private JLabel etiquetaAutor = new JLabel("Elaborado por: " + AUTOR);
 
     public VentanaPrincipal(AsociadoServicio servicio) {
         this.servicio = servicio;
@@ -44,7 +47,6 @@ public class VentanaPrincipal extends JFrame {
         setLayout(new BorderLayout(10, 10));
 
         JPanel formulario = new JPanel(new GridLayout(3, 2, 5, 5));
-        formulario.setBorder(BorderFactory.createTitledBorder("Nuevo asociado"));
         formulario.add(new JLabel("Cedula:"));
         formulario.add(campoCedula);
         formulario.add(new JLabel("Nombre:"));
@@ -57,21 +59,32 @@ public class VentanaPrincipal extends JFrame {
         botones.add(botonListar);
         botones.add(botonResumen);
 
-        JPanel busqueda = new JPanel();
-        busqueda.setBorder(BorderFactory.createTitledBorder("Buscar asociado"));
-        busqueda.add(new JLabel("Cedula:"));
-        busqueda.add(campoBuscar);
-        busqueda.add(botonBuscar);
+        JPanel registro = new JPanel(new BorderLayout(5, 5));
+        registro.setBorder(BorderFactory.createTitledBorder("Asociados"));
+        registro.add(formulario, BorderLayout.CENTER);
+        registro.add(botones, BorderLayout.SOUTH);
 
-        JPanel norte = new JPanel(new BorderLayout());
-        norte.add(formulario, BorderLayout.NORTH);
-        norte.add(botones, BorderLayout.CENTER);
-        norte.add(busqueda, BorderLayout.SOUTH);
+        JPanel panelBusqueda = new JPanel();
+        panelBusqueda.setBorder(BorderFactory.createTitledBorder("Buscar asociado"));
+        panelBusqueda.add(new JLabel("Cedula:"));
+        panelBusqueda.add(campoBuscar);
+        panelBusqueda.add(botonBuscar);
 
-        areaResultados.setEditable(false);
+        JPanel panelSuperior = new JPanel(new BorderLayout());
+        panelSuperior.add(registro, BorderLayout.CENTER);
+        panelSuperior.add(panelBusqueda, BorderLayout.SOUTH);
 
-        add(norte, BorderLayout.NORTH);
-        add(new JScrollPane(areaResultados), BorderLayout.CENTER);
+        etiquetaAutor.setHorizontalAlignment(JLabel.CENTER);
+        etiquetaAutor.setFont(etiquetaAutor.getFont().deriveFont(Font.BOLD, 14f));
+
+        JPanel encabezado = new JPanel(new BorderLayout());
+        encabezado.add(etiquetaAutor, BorderLayout.NORTH);
+        encabezado.add(panelSuperior, BorderLayout.CENTER);
+
+        areaListado.setEditable(false);
+
+        add(encabezado, BorderLayout.NORTH);
+        add(new JScrollPane(areaListado), BorderLayout.CENTER);
         add(etiquetaEstado, BorderLayout.SOUTH);
 
         botonRegistrar.addActionListener(e -> registrar());
@@ -147,7 +160,7 @@ public class VentanaPrincipal extends JFrame {
             Asociado a = servicio.buscarPorCedula(campoBuscar.getText());
 
             if (a == null) {
-                areaResultados.setText("--- Busqueda ---\nNo existe un asociado con esa cedula.\n");
+                areaListado.setText("--- Busqueda ---\nNo existe un asociado con esa cedula.\n");
                 mostrarEstado("No existe un asociado con esa cedula.", true);
                 JOptionPane.showMessageDialog(
                         this,
@@ -155,7 +168,7 @@ public class VentanaPrincipal extends JFrame {
                         TITULO_VENTANA,
                         JOptionPane.WARNING_MESSAGE);
             } else {
-                areaResultados.setText("--- Busqueda ---\n"
+                areaListado.setText("--- Busqueda ---\n"
                         + "Cedula: " + a.getCedula() + "\n"
                         + "Nombre: " + a.getNombre() + "\n"
                         + "Saldo de aportes: " + String.format("%.2f", a.getSaldoAportes()) + "\n");
@@ -171,12 +184,12 @@ public class VentanaPrincipal extends JFrame {
     private void actualizarLista() {
         try {
             ArrayList<Asociado> lista = servicio.listar();
-            areaResultados.setText("--- Lista ---\n");
+            areaListado.setText("--- Lista ---\n");
             for (Asociado a : lista) {
-                areaResultados.append(a + "\n");
+                areaListado.append(a + "\n");
             }
             if (lista.isEmpty()) {
-                areaResultados.append("No hay asociados registrados.\n");
+                areaListado.append("No hay asociados registrados.\n");
             }
         } catch (IOException e) {
             mostrarError("Error al leer el archivo: " + e.getMessage());
